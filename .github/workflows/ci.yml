@@ -1,0 +1,26 @@
+---
+name: CI
+
+on:
+  push:
+  schedule:
+    - cron: "0 0 * * *" # daily
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - run: |-
+          brew install -- shellcheck qemu bash gnu-getopt make
+
+      - run: |-
+          gmake lint
+
+      - run: |-
+          gmake root.ubuntu root.fedora c-i virtio-win
+
+      - run: |-
+          gmake --debug root.ubuntu root.fedora c-i

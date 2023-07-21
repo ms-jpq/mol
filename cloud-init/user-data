@@ -1,0 +1,21 @@
+#cloud-config
+
+packages:
+  - curl
+  - jq
+  - make
+  - rsync
+
+growpart:
+  mode: auto
+  devices:
+    - /
+  ignore_growroot_disabled: false
+
+users:
+  - name: root
+    lock_passwd: false
+    hashed_passwd: |-
+      ${PASSWD}
+    ssh-authorized-keys: |-
+      ${AUTHORIZED_KEYS}
