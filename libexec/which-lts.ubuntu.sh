@@ -11,13 +11,15 @@ aarch64*)
   ;;
 esac
 
+CONSERVE=3
+
 if ! [[ -v RELEASE ]]; then
   TIME="$(date -- '+%y %m')"
   YEAR="${TIME%% *}"
   MONTH="${TIME##* }"
   MONTH="${MONTH#0}"
 
-  if ! ((YEAR % 2)) && ((MONTH < 6)); then
+  if ! ((YEAR % 2)) && ((MONTH < (4 + CONSERVE))); then
     YEAR=$((YEAR - 1))
   fi
 

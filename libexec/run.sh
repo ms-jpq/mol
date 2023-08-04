@@ -9,7 +9,7 @@ if ((SUDO)); then
   SUDO=0 exec -- sudo -- "$0" "$@"
 fi
 
-LONG_OPTS='cpu:,mem:,log:,monitor:,gui,drive:,smbios:,ssh:'
+LONG_OPTS='cpu:,mem:,log:,monitor:,vnc:,drive:,smbios:,ssh:'
 GO="$("$BREW/opt/gnu-getopt/bin/getopt" --options='' --longoptions="$LONG_OPTS" --name="$0" -- "$@")"
 eval -- set -- "$GO"
 
@@ -34,9 +34,9 @@ while (($#)); do
     MONITOR="$2"
     shift -- 2
     ;;
-  --gui)
-    GUI=1
-    shift -- 1
+  --vnc)
+    VNC="$2"
+    shift -- 2
     ;;
   --drive)
     DRIVES+=("$2")
@@ -80,12 +80,13 @@ ARGV+=(
   -device virtio-balloon-pci-non-transitional
 )
 
-if [[ -v GUI ]]; then
+if [[ -v VNC ]]; then
   ARGV+=(
+    -vnc "unix:$VNC,password=on"
+    -device "ich9-intel-hda"
     -device 'virtio-gpu-pci'
     -device 'virtio-keyboard-pci'
     -device 'virtio-tablet-pci'
-    -device 'ich9-intel-hda'
   )
 else
   ARGV+=(
