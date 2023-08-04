@@ -2,21 +2,21 @@
 
 set -o pipefail
 
-BREW="$(brew --prefix)"
+BREW="${BREW:-"$(brew --prefix)"}"
 
-SUDO="${SUDO:-0}"
-if ((SUDO)); then
-  SUDO=0 exec -- sudo -- "$0" "$@"
-fi
-
-LONG_OPTS='cpu:,mem:,log:,console:,monitor:,vnc:,drive:,smbios:,ssh:'
+LONG_OPTS='sudo,cpu:,mem:,log:,qmp:,console:,monitor:,vnc:,drive:,smbios:,ssh:'
 GO="$("$BREW/opt/gnu-getopt/bin/getopt" --options='' --longoptions="$LONG_OPTS" --name="$0" -- "$@")"
 eval -- set -- "$GO"
 
+SUDO=0
 DRIVES=()
 OEM_STRINGS=()
 while (($#)); do
   case "$1" in
+  --sudo)
+    SUDO=1
+    shift -- 1
+    ;;
   --cpu)
     CPU="$2"
     shift -- 2
@@ -27,6 +27,10 @@ while (($#)); do
     ;;
   --log)
     LOG=("$2")
+    shift -- 2
+    ;;
+  --qmp)
+    QMP="$2"
     shift -- 2
     ;;
   --console)
@@ -63,6 +67,10 @@ while (($#)); do
   esac
 done
 
+if ((SUDO)) && ((UID)); then
+  exec -- --preserve-env -- "$0" "$@"
+fi
+
 if ! [[ -v CPU ]]; then
   NPROCS="$(sysctl -n hw.ncpu)"
   CPU="cpus=$((NPROCS / 2))"
@@ -89,6 +97,18 @@ else
   ARGV+=(-serial stdio)
 fi
 
+if [[ -v LOG ]]; then
+  ARGV+=(-D "$LOG")
+fi
+
+if [[ -v QMP ]]; then
+  ARGV+=(-qmp "unix:$QMP,server,nowait")
+fi
+
+if [[ -v MONITOR ]]; then
+  ARGV+=(-monitor "unix:$MONITOR,server,nowait")
+fi
+
 if [[ -v VNC ]]; then
   ARGV+=(
     -vnc "unix:$VNC,password=on"
@@ -101,27 +121,17 @@ else
   ARGV+=(-nographic)
 fi
 
-if [[ -v LOG ]]; then
-  ARGV+=(-D "$LOG")
-fi
-
-if [[ -v MONITOR ]]; then
-  ARGV+=(-monitor "unix:$MONITOR,server,nowait")
-fi
-
+NIC='model=virtio-net-pci-non-transitional'
 if [[ -v SSH ]]; then
   SSH_FWD=",hostfwd=tcp:$SSH-:22"
 else
   SSH_FWD=''
 fi
-
-NIC='model=virtio-net-pci-non-transitional'
+ARGV+=(-nic "user,${NIC}$SSH_FWD")
 
 if ! ((UID)); then
   ARGV+=(-nic "vmnet-shared,$NIC")
 fi
-
-ARGV+=(-nic "user,${NIC}$SSH_FWD")
 
 ARGV+=(-bios "$BREW/opt/qemu/share/qemu/edk2-aarch64-code.fd")
 

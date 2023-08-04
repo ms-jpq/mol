@@ -16,7 +16,7 @@ SHELL := bash
 
 clean:
 	shopt -u failglob
-	rm -rf -- '$(VAR)/'*.html '$(VAR)/cloud-init'
+	rm -rf -- '$(VAR)/'*.html '$(VAR)/cloud-init' '$(VAR)/'*.vm/*.{log,hist}
 
 clobber: clean
 	shopt -u failglob
@@ -27,8 +27,6 @@ CURL := curl --fail --location --output
 CLOUD_INIT := $(VAR)/cloud-init.iso
 
 NAME ?= _
-ARGV ?=
-QEMU_OPTS := --ssh "$$$${SSH:-"127.0.0.1:$$$$(./libexec/ssh-port.sh)"}" --smbios "$$$$(./libexec/authorized_keys.sh)" --drive $(CLOUD_INIT) $$(ARGV)
 
 lint:
 	shellcheck -- **/*.sh
@@ -60,13 +58,10 @@ $(CLOUD_INIT): $(VAR)/cloud-init $(VAR)/cloud-init/meta-data $(VAR)/cloud-init/u
 
 define TEMPLATE
 
-.PHONY: root.$1 run.$1 con.$1 qm.$1 clobber.$1
+.PHONY: root.$1 run.$1 clobber.$1
 
 $1_VM := $(VAR)/$(NAME).$1.vm
 $1_RUN := $$($1_VM)/run.raw
-$1_LOG := $$($1_VM)/qemu.log
-$1_CON := $$($1_VM)/con.sock
-$1_QM := $$($1_VM)/qm.sock
 
 $$($1_CLOUD_IMG): | $(VAR)
 	$(CURL) '$$@' -- '$$($1_CLOUD)'
@@ -81,13 +76,6 @@ $$($1_RUN): | $$($1_RAW) $$($1_VM)
 	qemu-img resize -f raw -- '$$@' +88G
 
 run.$1: $$($1_RUN) $(CLOUD_INIT)
-	./libexec/run.sh --drive '$$<' --log '$$($1_LOG)' --console '$$($1_CON)' --monitor '$$($1_QM)' $(QEMU_OPTS)
-
-con.$1: $$($1_CON)
-	socat 'READLINE,history=$$($1_VM)/con.hist' UNIX-CONNECT:'$$<'
-
-qm.$1: $$($1_QM)
-	socat 'READLINE,history=$$($1_VM)/qm.hist' UNIX-CONNECT:'$$<'
 
 clobber.$1:
 	rm -v -rf -- '$$($1_VM)'
