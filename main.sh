@@ -4,7 +4,7 @@ set -o pipefail
 
 if [[ -L "$0" ]]; then
   DIR="${0%/*}"
-  REAL="$DIR/$(/usr/bin/readlink -- "$0")"
+  REAL="$DIR/$(readlink -- "$0")"
 else
   REAL="$0"
 fi
