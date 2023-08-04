@@ -9,11 +9,10 @@ if ((SUDO)); then
   SUDO=0 exec -- sudo -- "$0" "$@"
 fi
 
-LONG_OPTS='cpu:,mem:,log:,monitor:,vnc:,drive:,smbios:,ssh:'
+LONG_OPTS='cpu:,mem:,log:,console:,monitor:,vnc:,drive:,smbios:,ssh:'
 GO="$("$BREW/opt/gnu-getopt/bin/getopt" --options='' --longoptions="$LONG_OPTS" --name="$0" -- "$@")"
 eval -- set -- "$GO"
 
-COUNT=0
 DRIVES=()
 OEM_STRINGS=()
 while (($#)); do
@@ -28,6 +27,10 @@ while (($#)); do
     ;;
   --log)
     LOG=("$2")
+    shift -- 2
+    ;;
+  --console)
+    CONSOLE="$2"
     shift -- 2
     ;;
   --monitor)
@@ -80,6 +83,12 @@ ARGV+=(
   -device virtio-balloon-pci-non-transitional
 )
 
+if [[ -v CONSOLE ]]; then
+  ARGV+=(-serial "unix:server=on,wait=off,path=$CONSOLE")
+else
+  ARGV+=(-serial stdio)
+fi
+
 if [[ -v VNC ]]; then
   ARGV+=(
     -vnc "unix:$VNC,password=on"
@@ -89,10 +98,7 @@ if [[ -v VNC ]]; then
     -device 'virtio-tablet-pci'
   )
 else
-  ARGV+=(
-    -nographic
-    -serial stdio
-  )
+  ARGV+=(-nographic)
 fi
 
 if [[ -v LOG ]]; then
@@ -120,11 +126,7 @@ ARGV+=(-nic "user,${NIC}$SSH_FWD")
 ARGV+=(-bios "$BREW/opt/qemu/share/qemu/edk2-aarch64-code.fd")
 
 for DRIVE in "${DRIVES[@]}"; do
-  ID="dri$((COUNT++))"
-  ARGV+=(
-    -drive "id=$ID,if=none,discard=unmap,format=raw,file=$DRIVE"
-    -device "virtio-blk-pci-non-transitional,drive=$ID"
-  )
+  ARGV+=(-drive "if=virtio,discard=unmap,format=raw,file=$DRIVE")
 done
 
 if (("${#OEM_STRINGS[@]}")); then
@@ -143,11 +145,11 @@ pprint() {
   while (($#)); do
     NEXT="${2:-""}"
     if [[ -n "$NEXT" ]] && ! [[ "$NEXT" =~ ^- ]]; then
-      printf -- '%s ' "$1"
+      CH=' '
     else
-      printf -- '%s\n' "$1"
+      CH='\n'
     fi
-
+    printf -- "%s$CH" "$1"
     shift -- 1
   done | column -t >&2
 }
