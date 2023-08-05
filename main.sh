@@ -62,6 +62,11 @@ mkdir -v -p -- "$ROOT"
 
 case "${ACTION:-"run"}" in
 run)
+  MARGV=(gmake -- NAME="$NAME" "run.$OS")
+  if ((VNC)); then
+    MARGV+=(novnc)
+  fi
+
   SMBIOS="$(./libexec/authorized_keys.sh)"
   SSH_CONN="${SSH:-"127.0.0.1:$(./libexec/ssh-port.sh)"}"
   SSH_HOST="${SSH_CONN%%:*}"
@@ -79,7 +84,7 @@ run)
     --drive ./var/cloud-init.iso
   )
   if ((VNC)); then
-    QARGV+=(--vnc "$VNC_SOCK")
+    QARGV+=(--vnc "unix:$VNC_SOCK")
   fi
   QARGV+=(-- "$@")
 
@@ -89,14 +94,14 @@ run)
   done
   set +x
 
-  flock "$ROOT" gmake --debug -- NAME="$NAME" "run.$OS"
+  flock "$ROOT" "${MARGV[@]}"
   {
     printf -- '\n%s' '>>> '
     printf -- '%q ' ssh -p "$SSH_PORT" -u root "$SSH_HOST"
     printf -- '<<<\n\n'
   } >&2
   printf -- '%s' "$SSH_CONN" >"$ROOT/ssh.conn"
-  flock "$ROOT" "${QARGV[@]}"
+  exec -- flock "$ROOT" "${QARGV[@]}"
   ;;
 rm | remove)
   set -x
@@ -112,17 +117,20 @@ lock)
 unlock)
   exec -- chmod -v -t "$ROOT"
   ;;
+v | vnc)
+  SOCK="$VNC_SOCK"
+  nc -U -- "$QM_SOCK" <<<'set_password vnc root'
+  open -u -- 'vnc://localhost'
+  exec -- socat 'TCP-LISTEN:5900,reuseaddr,fork' "UNIX-CONNECT:$SOCK"
+  ;;
 c | console)
   SOCK="$CON_SOCK"
-  ;;
-j | qmp)
-  SOCK="$QMP_SOCK"
   ;;
 q | monitor)
   SOCK="$QM_SOCK"
   ;;
-vnc)
-  SOCK="$VNC_SOCK"
+j | qmp)
+  SOCK="$QMP_SOCK"
   ;;
 *)
   exec -- gmake help
