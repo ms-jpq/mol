@@ -4,7 +4,7 @@ set -o pipefail
 
 cd -- "${0%/*}/.."
 
-SOCKS=(./var/*.vm/*.sock)
+SOCKS=(./var/vm/*/qmp.sock)
 BOTTOM=60022
 PORT=$((BOTTOM + ${#SOCKS[@]}))
 printf -- '%s' $((PORT))

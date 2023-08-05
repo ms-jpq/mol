@@ -16,7 +16,7 @@ SHELL := bash
 
 clean:
 	shopt -u failglob
-	rm -rf -- '$(VAR)/'*.html '$(VAR)/cloud-init' '$(VAR)/'*.vm/*.{log,hist}
+	rm -rf -- '$(VAR)/'*.html '$(VAR)/cloud-init' '$(VAR)/vm/'*.{log,hist}
 
 clobber: clean
 	shopt -u failglob
@@ -35,6 +35,9 @@ help: ./README.md
 	cat -- '$<'
 
 $(VAR):
+	mkdir -v -p -- '$@'
+
+$(VAR)/vm:
 	mkdir -v -p -- '$@'
 
 $(VAR)/cloud-init: | $(VAR)
@@ -60,7 +63,7 @@ define TEMPLATE
 
 .PHONY: root.$1 run.$1 clobber.$1
 
-$1_VM := $(VAR)/$(NAME).$1.vm
+$1_VM := $(VAR)/vm/$(NAME).$1
 $1_RUN := $$($1_VM)/run.raw
 
 $$($1_CLOUD_IMG): | $(VAR)

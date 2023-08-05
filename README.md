@@ -23,6 +23,7 @@ brew install -- qemu bash gnu-getopt make flock socat
 | Action           | Description                                        |
 | ---------------- | -------------------------------------------------- |
 | `r` \| `run`     | run VM                                             |
+| `ls`             | list VMs                                           |
 | `rm` \| `remove` | remove VM                                          |
 | `lock`           | protect VM from `rm`                               |
 | `unlock`         | safety-off                                         |

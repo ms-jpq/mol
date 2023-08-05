@@ -50,15 +50,14 @@ while (($#)); do
   esac
 done
 
-ROOT="./var/$NAME.$OS.vm"
+VAR="./var/vm"
+ROOT="$VAR/$NAME.$OS"
 LOG="$ROOT/qemu.log"
 QMP_SOCK="$ROOT/qmp.sock"
 CON_SOCK="$ROOT/con.sock"
 QM_SOCK="$ROOT/qm.sock"
 VNC_SOCK="$ROOT/vnc.sock"
 DRIVE="$ROOT/run.raw"
-
-mkdir -v -p -- "$ROOT"
 
 case "${ACTION:-"run"}" in
 run)
@@ -88,6 +87,7 @@ run)
   fi
   QARGV+=(-- "$@")
 
+  mkdir -p -- "$ROOT"
   set -x
   until flock --nonblock "$ROOT" true; do
     sleep -- 1
@@ -103,9 +103,13 @@ run)
   printf -- '%s' "$SSH_CONN" >"$ROOT/ssh.conn"
   exec -- flock "$ROOT" "${QARGV[@]}"
   ;;
+ls)
+  exec -- ls --almost-all --group-directories-first --classify --human-readable --si --color=auto --color -- "$VAR"
+  ;;
 rm | remove)
   set -x
   if ! [[ -k "$ROOT" ]]; then
+    mkdir -p -- "$ROOT"
     exec -- flock --nonblock "$ROOT" rm -v -rf -- "$ROOT"
   else
     exit 1
