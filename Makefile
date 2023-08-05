@@ -23,6 +23,8 @@ clobber: clean
 	rm -rf -- '$(VAR)'
 
 VAR := ./var
+CACHE := $(VAR)/cache
+LIB := $(VAR)/lib
 CURL := curl --fail --location --output
 CLOUD_INIT := $(VAR)/cloud-init.iso
 
@@ -34,13 +36,10 @@ lint:
 help: ./README.md
 	cat -- '$<'
 
-$(VAR):
+$(VAR) $(CACHE) $(LIB):
 	mkdir -v -p -- '$@'
 
-$(VAR)/vm:
-	mkdir -v -p -- '$@'
-
-$(VAR)/cloud-init: | $(VAR)
+$(CACHE)/cloud-init: | $(CACHE)
 	mkdir -v -p -- '$@'
 
 $(VAR)/cloud-init/meta-data: ./cloud-init/meta-data | $(VAR)/cloud-init
@@ -63,15 +62,15 @@ define TEMPLATE
 
 .PHONY: root.$1 run.$1 clobber.$1
 
-$1_VM := $(VAR)/vm/$(NAME).$1
+$1_VM := $(LIB)/$(NAME).$1
 $1_RUN := $$($1_VM)/run.raw
 
-$$($1_CLOUD_IMG): | $(VAR)
+$$($1_CLOUD_IMG): | $(CACHE)
 	$(CURL) '$$@' -- '$$($1_CLOUD)'
 
 root.$1: $$($1_RAW)
 
-$$($1_VM):
+$$($1_VM): | $(LIB)
 	mkdir -v -p -- '$$@'
 
 $$($1_RUN): | $$($1_RAW) $$($1_VM)

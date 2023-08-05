@@ -50,7 +50,7 @@ while (($#)); do
   esac
 done
 
-VAR="./var/vm"
+VAR="./var/lib"
 ROOT="$VAR/$NAME.$OS"
 LOG="$ROOT/qemu.log"
 QMP_SOCK="$ROOT/qmp.sock"
@@ -80,7 +80,7 @@ run)
     --smbios "$SMBIOS"
     --ssh "$SSH_CONN"
     --drive "$DRIVE"
-    --drive ./var/cloud-init.iso
+    --drive "$VAR/cache/cloud-init.iso"
   )
   if ((VNC)); then
     QARGV+=(--vnc "unix:$VNC_SOCK")
