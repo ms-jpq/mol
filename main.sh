@@ -50,8 +50,10 @@ while (($#)); do
   esac
 done
 
-VAR="./var/lib"
-ROOT="$VAR/$NAME.$OS"
+VAR='./var'
+LIB="$VAR/lib"
+ROOT="$LIB/$NAME.$OS"
+
 LOG="$ROOT/qemu.log"
 QMP_SOCK="$ROOT/qmp.sock"
 CON_SOCK="$ROOT/con.sock"
@@ -104,7 +106,7 @@ run)
   exec -- flock "$ROOT" "${QARGV[@]}"
   ;;
 ls)
-  exec -- ls --almost-all --group-directories-first --classify --human-readable --si --color=auto --color -- "$VAR"
+  exec -- ls --almost-all --group-directories-first --classify --human-readable --si --color=auto --color -- "$LIB"
   ;;
 rm | remove)
   set -x
