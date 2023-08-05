@@ -17,25 +17,33 @@ brew install -- qemu bash gnu-getopt make flock socat
 ## Usage
 
 ```bash
-./main.sh [ACTION='run'] [-n --name NAME='_'] [--os OS] [--vnc] ...raw qemu args
+# The `--` are required to distinguish convenience / raw qemu args
+./main.sh ACTION [-n --name NAME='_'] [--os OS] [--vnc] -- ...convenience args -- ...raw qemu args
 ```
 
 | Action           | Description                                        |
 | ---------------- | -------------------------------------------------- |
 | `r` \| `run`     | run VM                                             |
-| `ls`             | list VMs                                           |
+| `l` \| `ls`      | list VMs                                           |
 | `rm` \| `remove` | remove VM                                          |
 | `lock`           | protect VM from `rm`                               |
 | `unlock`         | safety-off                                         |
 | `c` \| `console` | connect to VM serial console                       |
-| `q` \| `monitor` | connect to qemu text console                       |
+| `m` \| `monitor` | connect to qemu text console                       |
 | `v` \| `vnc`     | connect to VNC display (if VM was provisioned one) |
-| `j` \| `qmp`     | connect to qemu JSON console                       |
+| `q` \| `qmp`     | connect to qemu JSON console                       |
 
 | OS     | Description   |
 | ------ | ------------- |
 | ubuntu | ubuntu-lts    |
 | fedora | fedora-latest |
+
+### Convenience Arguments
+
+| Arg     | Description | Default           |
+| ------- | ----------- | ----------------- |
+| `--cpu` | # cores     | physical cpus / 2 |
+| `--mem` | memory      | 1G                |
 
 ## Files
 

@@ -37,7 +37,8 @@ while (($#)); do
     shift -- 1
     ;;
   --)
-    shift -- 1
+    ACTION="$2"
+    shift -- 2 || exec -- gmake help
     break
     ;;
   *)
@@ -57,14 +58,8 @@ QM_SOCK="$ROOT/qm.sock"
 VNC_SOCK="$ROOT/vnc.sock"
 DRIVE="$ROOT/run.raw"
 
-ACTION="${1:-""}"
-
-if [[ -n "$ACTION" ]]; then
-  shift -- 1
-fi
-
-case "${ACTION:-"run"}" in
-run)
+case "$ACTION" in
+r | run)
   SMBIOS="$(./libexec/authorized_keys.sh)"
   SSH_CONN="${SSH:-"127.0.0.1:$(./libexec/ssh-port.sh)"}"
   SSH_HOST="${SSH_CONN%%:*}"
@@ -84,7 +79,7 @@ run)
   if ((VNC)); then
     QARGV+=(--vnc "unix:$VNC_SOCK")
   fi
-  QARGV+=(-- "$@")
+  QARGV+=("$@")
 
   mkdir -p -- "$ROOT"
   set -x
@@ -102,9 +97,9 @@ run)
   printf -- '%s' "$SSH_CONN" >"$ROOT/ssh.conn"
   exec -- flock "$ROOT" "${QARGV[@]}"
   ;;
-ls)
+l | ls)
   mkdir -v -p -- "$LIB"
-  exec -- /bin/ls -AFhl --color=auto -- "$LIB"
+  exec -- ls -AFhl --color=auto -- "$LIB"
   ;;
 rm | remove)
   set -x
@@ -130,10 +125,10 @@ v | vnc)
 c | console)
   SOCK="$CON_SOCK"
   ;;
-q | monitor)
+m | monitor)
   SOCK="$QM_SOCK"
   ;;
-j | qmp)
+q | qmp)
   SOCK="$QMP_SOCK"
   ;;
 *)

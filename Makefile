@@ -42,10 +42,10 @@ $(VAR) $(CACHE) $(LIB):
 $(CACHE)/cloud-init: | $(CACHE)
 	mkdir -v -p -- '$@'
 
-$(CACHE)/cloud-init/meta-data: ./cloud-init/meta-data | $(CACHE)/cloud-init
+$(CACHE)/cloud-init/meta-data: ./cloud-init/meta-data.yml | $(CACHE)/cloud-init
 	cat -- '$<' | ./libexec/envsubst.pl >'$@'
 
-$(CACHE)/cloud-init/user-data: ./cloud-init/user-data | $(CACHE)/cloud-init
+$(CACHE)/cloud-init/user-data: ./cloud-init/user-data.yml | $(CACHE)/cloud-init
 	shopt -u failglob
 	export -- PASSWD AUTHORIZED_KEYS
 	PASSWD="$$(openssl passwd -1 -salt "$$(uuidgen)" root)"

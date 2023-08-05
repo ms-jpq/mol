@@ -1,11 +1,4 @@
 #cloud-config
-
-packages:
-  - curl
-  - jq
-  - make
-  - rsync
-
 growpart:
   mode: auto
   devices:
