@@ -16,7 +16,7 @@ SHELL := bash
 
 clean:
 	shopt -u failglob
-	rm -rf -- '$(VAR)/'*.html '$(VAR)/cloud-init' '$(VAR)/vm/'*.{log,hist}
+	rm -rf -- '$(CACHE)/'*.html '$(CACHE)/cloud-init' '$(VAR)/vm/'*.{log,hist}
 
 clobber: clean
 	shopt -u failglob
@@ -26,7 +26,7 @@ VAR := ./var
 CACHE := $(VAR)/cache
 LIB := $(VAR)/lib
 CURL := curl --fail --location --output
-CLOUD_INIT := $(VAR)/cloud-init.iso
+CLOUD_INIT := $(CACHE)/cloud-init.iso
 
 NAME ?= _
 
@@ -42,10 +42,10 @@ $(VAR) $(CACHE) $(LIB):
 $(CACHE)/cloud-init: | $(CACHE)
 	mkdir -v -p -- '$@'
 
-$(VAR)/cloud-init/meta-data: ./cloud-init/meta-data | $(VAR)/cloud-init
+$(CACHE)/cloud-init/meta-data: ./cloud-init/meta-data | $(CACHE)/cloud-init
 	cat -- '$<' | ./libexec/envsubst.pl >'$@'
 
-$(VAR)/cloud-init/user-data: ./cloud-init/user-data | $(VAR)/cloud-init
+$(CACHE)/cloud-init/user-data: ./cloud-init/user-data | $(CACHE)/cloud-init
 	shopt -u failglob
 	export -- PASSWD AUTHORIZED_KEYS
 	PASSWD="$$(openssl passwd -1 -salt "$$(uuidgen)" root)"
@@ -53,7 +53,7 @@ $(VAR)/cloud-init/user-data: ./cloud-init/user-data | $(VAR)/cloud-init
 	cat -- '$<' | ./libexec/envsubst.pl >'$@'
 
 c-i: $(CLOUD_INIT)
-$(CLOUD_INIT): $(VAR)/cloud-init $(VAR)/cloud-init/meta-data $(VAR)/cloud-init/user-data
+$(CLOUD_INIT): $(CACHE)/cloud-init $(CACHE)/cloud-init/meta-data $(CACHE)/cloud-init/user-data
 	rm -v -fr -- '$@'
 	hdiutil makehybrid -iso -joliet -default-volume-name cidata -o '$@' '$<'
 
