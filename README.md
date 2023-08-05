@@ -38,12 +38,16 @@ brew install -- qemu bash gnu-getopt make flock socat
 
 ## Files
 
-`./main.sh` will create a VM @ `./var/$NAME.$OS.vm`
+`./main.sh` will create a VM @ `./var/$NAME.$OS.vm` (ROOT)
 
-- `./var/$NAME.$OS.vm/ssh.conn` in addition to console output will contain the path of SSH socket
+- `$ROOT/ssh.conn` in addition to console output will contain the path of SSH socket
 
 ## Serial Console
 
-You will have to **PRESS THE ENTER KEY** before you see any output.
-
 The OS is waiting for a keyboard input before it respond with any text.
+
+- You will have to **PRESS THE ENTER KEY** before you see any output.
+
+- `root` user's password is `root`
+
+- `rm` on a running VM will fail. Running VMs are protected via `flock` `$ROOT`
