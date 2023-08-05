@@ -43,12 +43,10 @@ brew install -- qemu bash gnu-getopt make flock socat
 
 - `$ROOT/ssh.conn` in addition to console output will contain the path of SSH socket
 
+- `rm` on a running VM will fail. Running VMs are protected via `flock $ROOT`
+
 ## Serial Console
 
-The OS is waiting for a keyboard input before it respond with any text.
-
-- You will have to **PRESS THE ENTER KEY** before you see any output.
+- You will have to **PRESS THE ENTER KEY** before you see anything, the OS is waiting for your input.
 
 - `root` user's password is `root`
-
-- `rm` on a running VM will fail. Running VMs are protected via `flock` `$ROOT`
