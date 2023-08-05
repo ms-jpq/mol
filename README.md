@@ -17,23 +17,33 @@ brew install -- qemu bash gnu-getopt make flock socat
 ## Usage
 
 ```bash
-./main.sh [-n --name NAME='_'] [-a --action ACTION='run'] [--os OS] [--vnc]
+./main.sh [-n --name NAME='_'] [-a --action ACTION='run'] [--os OS] [--vnc] -- ...raw qemu args
 ```
 
-| Action             | Description                                        |
-| ------------------ | -------------------------------------------------- |
-| `run`              | run VM                                             |
-| `rm` \| `remove`   | remove VM                                          |
-| `lock`             | protect VM from `rm`                               |
-| `unlock`           | safety-off                                         |
-| `con` \| `console` | connect to VM console                              |
-| `qmp`              | connect to qemu console                            |
-| `qm` \| `monitor`  | connect to qemu json console                       |
-| `vnc`              | connect to VNC display (if VM was provisioned one) |
+| Action           | Description                                        |
+| ---------------- | -------------------------------------------------- |
+| `r` \| `run`     | run VM                                             |
+| `rm` \| `remove` | remove VM                                          |
+| `lock`           | protect VM from `rm`                               |
+| `unlock`         | safety-off                                         |
+| `c` \| `console` | connect to VM serial console                       |
+| `q` \| `monitor` | connect to qemu text console                       |
+| `v` \| `vnc`     | connect to VNC display (if VM was provisioned one) |
+| `j` \| `qmp`     | connect to qemu JSON console                       |
 
 | OS     | Description   |
 | ------ | ------------- |
 | ubuntu | ubuntu-lts    |
 | fedora | fedora-latest |
 
-## SSH
+## Files
+
+`./main.sh` will create a VM @ `./var/$NAME.$OS.vm`
+
+- `./var/$NAME.$OS.vm/ssh.conn` in addition to console output will contain the path of SSH socket
+
+## Serial Console
+
+You will have to **PRESS THE ENTER KEY** before you see any output.
+
+The OS is waiting for a keyboard input before it respond with any text.

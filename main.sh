@@ -91,9 +91,9 @@ run)
 
   flock "$ROOT" gmake --debug -- NAME="$NAME" "run.$OS"
   {
-    printf -- '\n'
+    printf -- '\n%s' '>>> '
     printf -- '%q ' ssh -p "$SSH_PORT" -u root "$SSH_HOST"
-    printf -- '\n\n'
+    printf -- '<<<\n\n'
   } >&2
   printf -- '%s' "$SSH_CONN" >"$ROOT/ssh.conn"
   flock "$ROOT" "${QARGV[@]}"
@@ -112,13 +112,13 @@ lock)
 unlock)
   exec -- chmod -v -t "$ROOT"
   ;;
-con | console)
+c | console)
   SOCK="$CON_SOCK"
   ;;
-qmp)
+j | qmp)
   SOCK="$QMP_SOCK"
   ;;
-qm | monitor)
+q | monitor)
   SOCK="$QM_SOCK"
   ;;
 vnc)
