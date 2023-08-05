@@ -17,7 +17,7 @@ brew install -- qemu bash gnu-getopt make flock socat
 ## Usage
 
 ```bash
-./main.sh [-n --name NAME='_'] [-a --action ACTION='run'] [--os OS] [--vnc] -- ...raw qemu args
+./main.sh [ACTION='run'] [-n --name NAME='_'] [--os OS] [--vnc] ...raw qemu args
 ```
 
 | Action           | Description                                        |

@@ -20,7 +20,7 @@ jobs:
           gmake lint
 
       - run: |-
-          gmake root.ubuntu root.fedora c-i virtio-win
+          gmake test
 
       - run: |-
-          gmake --debug root.ubuntu root.fedora c-i
+          gmake --debug test

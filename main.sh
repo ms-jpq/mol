@@ -15,7 +15,7 @@ BREW="$(brew --prefix)"
 export -- BREW
 
 OPTS='n:,a:'
-LONG_OPTS='name:,action:,os:,vnc'
+LONG_OPTS='name:,os:,vnc'
 GO="$("$BREW/opt/gnu-getopt/bin/getopt" --options="$OPTS" --longoptions="$LONG_OPTS" --name="$0" -- "$@")"
 eval -- set -- "$GO"
 
@@ -26,10 +26,6 @@ while (($#)); do
   case "$1" in
   -n | --name)
     NAME="$2"
-    shift -- 2
-    ;;
-  -a | --action)
-    ACTION="$2"
     shift -- 2
     ;;
   --os)
@@ -45,7 +41,7 @@ while (($#)); do
     break
     ;;
   *)
-    exit 1
+    exec -- gmake help
     ;;
   esac
 done
@@ -61,13 +57,14 @@ QM_SOCK="$ROOT/qm.sock"
 VNC_SOCK="$ROOT/vnc.sock"
 DRIVE="$ROOT/run.raw"
 
+ACTION="${1:-""}"
+
+if [[ -n "$ACTION" ]]; then
+  shift -- 1
+fi
+
 case "${ACTION:-"run"}" in
 run)
-  MARGV=(gmake -- NAME="$NAME" "run.$OS")
-  if ((VNC)); then
-    MARGV+=(novnc)
-  fi
-
   SMBIOS="$(./libexec/authorized_keys.sh)"
   SSH_CONN="${SSH:-"127.0.0.1:$(./libexec/ssh-port.sh)"}"
   SSH_HOST="${SSH_CONN%%:*}"
@@ -96,7 +93,7 @@ run)
   done
   set +x
 
-  flock "$ROOT" "${MARGV[@]}"
+  flock "$ROOT" gmake -- NAME="$NAME" "run.$OS"
   {
     printf -- '\n%s' '>>> '
     printf -- '%q ' ssh -p "$SSH_PORT" -u root "$SSH_HOST"
@@ -106,7 +103,8 @@ run)
   exec -- flock "$ROOT" "${QARGV[@]}"
   ;;
 ls)
-  exec -- ls --almost-all --group-directories-first --classify --human-readable --si --color=auto --color -- "$LIB"
+  mkdir -v -p -- "$LIB"
+  exec -- /bin/ls -AFhl --color=auto -- "$LIB"
   ;;
 rm | remove)
   set -x
@@ -126,7 +124,7 @@ unlock)
 v | vnc)
   SOCK="$VNC_SOCK"
   nc -U -- "$QM_SOCK" <<<'set_password vnc root'
-  open -u -- 'vnc://localhost'
+  open -u 'vnc://localhost'
   exec -- socat 'TCP-LISTEN:5900,reuseaddr,fork' "UNIX-CONNECT:$SOCK"
   ;;
 c | console)
