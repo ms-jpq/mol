@@ -14,8 +14,8 @@ cd -- "${REAL%/*}"
 BREW="$(brew --prefix)"
 export -- BREW
 
-OPTS='n:,a:'
-LONG_OPTS='name:,os:,vnc'
+OPTS='n:,a:,f:'
+LONG_OPTS='name:,os:,fork:,vnc'
 GO="$("$BREW/opt/gnu-getopt/bin/getopt" --options="$OPTS" --longoptions="$LONG_OPTS" --name="$0" -- "$@")"
 eval -- set -- "$GO"
 
@@ -32,17 +32,21 @@ while (($#)); do
     OS="$2"
     shift -- 2
     ;;
+  -f | --fork)
+    FORK="$2"
+    shift -- 2
+    ;;
   --vnc)
     VNC=1
     shift -- 1
     ;;
   --)
     ACTION="$2"
-    shift -- 2 || exec -- gmake help
+    shift -- 2
     break
     ;;
   *)
-    exec -- gmake help
+    exec -- gmake -- help >&2
     ;;
   esac
 done
@@ -56,9 +60,58 @@ QMP_SOCK="$ROOT/qmp.sock"
 CON_SOCK="$ROOT/con.sock"
 QM_SOCK="$ROOT/qm.sock"
 VNC_SOCK="$ROOT/vnc.sock"
-DRIVE="$ROOT/run.raw"
+
+RAW=run.raw
+DRIVE="$ROOT/$RAW"
+
+fwait() {
+  {
+    mkdir -v -p -- "$1"
+    set -x
+    until flock --nonblock "$1" true; do
+      sleep -- 1
+    done
+    set +x
+  } >&2
+}
+
+lsa() {
+  {
+    mkdir -v -p -- "$LIB"
+    ls -AFhl --color=auto -- "$LIB"
+  } >&2
+}
+
+new() {
+  {
+    fwait "$ROOT"
+    if [[ -v FORK ]]; then
+      F_DRIVE="$LIB/$FORK.$OS/$RAW"
+
+      printf -- '%q%s%q\n' "$F_DRIVE" ' -> ' "$DRIVE" >&2
+      if ! [[ -f "$F_DRIVE" ]]; then
+        printf -- '%s%q\n' '>? ' "$F_DRIVE"
+        exit 1
+      fi
+      if [[ -f "$DRIVE" ]]; then
+        printf -- '%s%q\n' '>! ' "$DRIVE"
+        lsa
+        exit 1
+      fi
+
+      mkdir -v -p -- "$ROOT" >&2
+      flock --nonblock "$ROOT" cp -v -f -- "$F_DRIVE" "$DRIVE"
+    else
+      flock --nonblock "$ROOT" gmake -- NAME="$NAME" "run.$OS"
+    fi
+  } >&2
+}
 
 case "$ACTION" in
+n | new)
+  new
+  exec -- true
+  ;;
 r | run)
   SMBIOS="$(./libexec/authorized_keys.sh)"
   SSH_CONN="${SSH:-"127.0.0.1:$(./libexec/ssh-port.sh)"}"
@@ -81,14 +134,10 @@ r | run)
   fi
   QARGV+=("$@")
 
-  mkdir -p -- "$ROOT"
-  set -x
-  until flock --nonblock "$ROOT" true; do
-    sleep -- 1
-  done
-  set +x
+  if ! [[ -f "$DRIVE" ]] || [[ -v FORK ]]; then
+    new
+  fi
 
-  flock "$ROOT" gmake -- NAME="$NAME" "run.$OS"
   {
     printf -- '\n%s' '>>> '
     printf -- '%q ' ssh -p "$SSH_PORT" -u root "$SSH_HOST"
@@ -98,28 +147,30 @@ r | run)
   exec -- flock "$ROOT" "${QARGV[@]}"
   ;;
 l | ls)
-  mkdir -v -p -- "$LIB"
-  exec -- ls -AFhl --color=auto -- "$LIB"
+  lsa
+  exec -- true
   ;;
 rm | remove)
   set -x
   if ! [[ -k "$ROOT" ]]; then
-    mkdir -p -- "$ROOT"
+    mkdir -p -- "$ROOT" >&2
     exec -- flock --nonblock "$ROOT" rm -v -rf -- "$ROOT"
   else
     exit 1
   fi
   ;;
 lock)
-  exec -- chmod -v +t "$ROOT"
+  exec -- chmod -v +t "$ROOT" >&2
   ;;
 unlock)
-  exec -- chmod -v -t "$ROOT"
+  exec -- chmod -v -t "$ROOT" >&2
   ;;
 v | vnc)
   SOCK="$VNC_SOCK"
-  nc -U -- "$QM_SOCK" <<<'set_password vnc root'
-  open -u 'vnc://localhost'
+  {
+    nc -U -- "$QM_SOCK" <<<'set_password vnc root'
+    open -u 'vnc://localhost'
+  } >&2
   exec -- socat 'TCP-LISTEN:5900,reuseaddr,fork' "UNIX-CONNECT:$SOCK"
   ;;
 c | console)
@@ -132,7 +183,7 @@ q | qmp)
   SOCK="$QMP_SOCK"
   ;;
 *)
-  exec -- gmake help
+  exec -- gmake -- help >&2
   ;;
 esac
 

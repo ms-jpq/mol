@@ -34,7 +34,7 @@ lint:
 	shellcheck -- **/*.sh
 
 help: ./README.md
-	cat -- '$<'
+	cat -- '$<' >&2
 
 $(VAR) $(CACHE) $(LIB):
 	mkdir -v -p -- '$@'
