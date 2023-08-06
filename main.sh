@@ -64,6 +64,9 @@ VNC_SOCK="$ROOT/vnc.sock"
 RAW=run.raw
 DRIVE="$ROOT/$RAW"
 
+SSH_LOCATION="$ROOT/ssh.conn"
+SSH_CMD=(ssh -l root -p)
+
 fwait() {
   {
     mkdir -v -p -- "$1"
@@ -107,6 +110,17 @@ new() {
   } >&2
 }
 
+ssh_pp() {
+  local -- conn="$1"
+  SSH_HOST="${conn%%:*}"
+  SSH_PORT="${conn##*:}"
+  {
+    printf -- '\n%s' '>>> '
+    printf -- '%q ' "${SSH_CMD[@]}" "$SSH_PORT" "$SSH_HOST"
+    printf -- '<<<\n\n'
+  } >&2
+}
+
 case "$ACTION" in
 n | new)
   new
@@ -115,8 +129,6 @@ n | new)
 r | run)
   SMBIOS="$(./libexec/authorized_keys.sh)"
   SSH_CONN="${SSH:-"127.0.0.1:$(./libexec/ssh-port.sh)"}"
-  SSH_HOST="${SSH_CONN%%:*}"
-  SSH_PORT="${SSH_CONN##*:}"
 
   QARGV=(
     ./libexec/run.sh
@@ -138,12 +150,8 @@ r | run)
     new
   fi
 
-  {
-    printf -- '\n%s' '>>> '
-    printf -- '%q ' ssh -p "$SSH_PORT" -u root "$SSH_HOST"
-    printf -- '<<<\n\n'
-  } >&2
-  printf -- '%s' "$SSH_CONN" >"$ROOT/ssh.conn"
+  ssh_pp "$SSH_CONN"
+  printf -- '%s' "$SSH_CONN" >"$SSH_LOCATION"
   exec -- flock "$ROOT" "${QARGV[@]}"
   ;;
 l | ls)
@@ -175,6 +183,11 @@ v | vnc)
   ;;
 c | console)
   SOCK="$CON_SOCK"
+  ;;
+s | ssh)
+  LOCATION="$(<"$SSH_LOCATION")"
+  ssh_pp "$LOCATION"
+  exec -- "${SSH_CMD[@]}" "$SSH_PORT" "$SSH_HOST"
   ;;
 m | monitor)
   SOCK="$QM_SOCK"
