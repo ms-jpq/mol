@@ -135,8 +135,13 @@ fi
 
 ARGV+=(-bios "$BREW/opt/qemu/share/qemu/edk2-aarch64-code.fd")
 
-for DRIVE in "${DRIVES[@]}"; do
-  ARGV+=(-drive "if=virtio,discard=unmap,format=raw,file=$DRIVE")
+for IDX in "${!DRIVES[@]}"; do
+  DRIVE="${DRIVES[$IDX]}"
+  ID="dri$IDX"
+  ARGV+=(
+    -drive "if=none,discard=unmap,format=raw,id=$ID,file=$DRIVE"
+    -device "virtio-blk-pci-non-transitional,drive=$ID"
+  )
 done
 
 if (("${#OEM_STRINGS[@]}")); then
