@@ -41,9 +41,14 @@ while (($#)); do
     shift -- 1
     ;;
   --)
-    ACTION="$2"
-    shift -- 2
-    break
+    shift -- 1
+    if (($#)); then
+      ACTION="$1"
+      shift -- 1
+      break
+    else
+      exec -- gmake -- help >&2
+    fi
     ;;
   *)
     exec -- gmake -- help >&2
