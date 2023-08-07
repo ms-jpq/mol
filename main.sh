@@ -155,6 +155,7 @@ r | run)
     new
   fi
 
+  fwait "$ROOT"
   ssh_pp "$SSH_CONN"
   printf -- '%s' "$SSH_CONN" >"$SSH_LOCATION"
   exec -- flock "$ROOT" "${QARGV[@]}"
