@@ -19,7 +19,7 @@ LONG_OPTS='name:,os:,fork:,vnc'
 GO="$("$BREW/opt/gnu-getopt/bin/getopt" --options="$OPTS" --longoptions="$LONG_OPTS" --name="$0" -- "$@")"
 eval -- set -- "$GO"
 
-NAME='_'
+NAME='vm'
 OS='ubuntu'
 VNC=0
 while (($#)); do
@@ -50,8 +50,7 @@ while (($#)); do
   esac
 done
 
-VAR='./var'
-LIB="$VAR/lib"
+LIB="./var/lib"
 ROOT="$LIB/$NAME.$OS"
 
 LOG="$ROOT/qemu.log"
@@ -62,6 +61,7 @@ VNC_SOCK="$ROOT/vnc.sock"
 
 RAW=run.raw
 DRIVE="$ROOT/$RAW"
+CLOUD_INIT="$ROOT/cloud-init.iso"
 
 SSH_LOCATION="$ROOT/ssh.conn"
 SSH_CMD=(ssh -l root -p)
@@ -138,7 +138,7 @@ r | run)
     --smbios "$SMBIOS"
     --ssh "$SSH_CONN"
     --drive "$DRIVE"
-    --drive "$VAR/cache/cloud-init.iso"
+    --drive "$CLOUD_INIT"
   )
   if ((VNC)); then
     QARGV+=(--vnc "unix:$VNC_SOCK")

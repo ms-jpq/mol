@@ -18,7 +18,7 @@ brew install -- qemu bash gnu-getopt make flock socat
 
 ```bash
 # The `--` are required to distinguish convenience / raw qemu args
-./main.sh ACTION [-n --name NAME='_'] [-f --fork UPSTREAM] [--os OS] [--vnc] -- ...convenience args -- ...raw qemu args
+./main.sh ACTION [-n --name NAME='vm'] [-f --fork UPSTREAM] [--os OS] [--vnc] -- ...convenience args -- ...raw qemu args
 ```
 
 | Action           | Description                                        |
