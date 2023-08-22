@@ -27,8 +27,8 @@ brew install -- qemu bash gnu-getopt make flock socat
 | `r` \| `run`     | run VM                                             |
 | `l` \| `ls`      | list VMs                                           |
 | `rm` \| `remove` | remove VM                                          |
-| `lock`           | protect VM from `rm`                               |
-| `unlock`         | safety-off                                         |
+| `pin`            | protect VM from `rm`                               |
+| `unpin`          | safety-off                                         |
 | `c` \| `console` | connect to VM serial console                       |
 | `s` \| `ssh`     | connect to VM via SSH                              |
 | `m` \| `monitor` | connect to qemu text console                       |

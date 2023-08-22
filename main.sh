@@ -167,10 +167,10 @@ rm | remove)
     exit 1
   fi
   ;;
-lock)
+pin)
   exec -- chmod -v +t "$ROOT" >&2
   ;;
-unlock)
+unpin)
   exec -- chmod -v -t "$ROOT" >&2
   ;;
 v | vnc)
