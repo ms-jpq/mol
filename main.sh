@@ -43,6 +43,7 @@ while (($#)); do
   --)
     ACTION="${2:-run}"
     shift -- 2 || shift -- 1
+    break
     ;;
   *)
     exec -- gmake -- help >&2
@@ -187,7 +188,12 @@ c | console)
 s | ssh)
   LOCATION="$(<"$SSH_LOCATION")"
   ssh_pp "$LOCATION"
-  exec -- "${SSH_CMD[@]}" "$SSH_PORT" "$SSH_HOST"
+  AV=()
+  if (($#)); then
+    printf -v A -- '%q ' "$@"
+    AV+=("$A")
+  fi
+  exec -- "${SSH_CMD[@]}" "$SSH_PORT" "$SSH_HOST" "${AV[@]}"
   ;;
 m | monitor)
   SOCK="$QM_SOCK"
