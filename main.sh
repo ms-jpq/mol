@@ -54,7 +54,6 @@ done
 LIB="./var/lib"
 ROOT="$LIB/$NAME.$OS"
 
-LOG="$ROOT/qemu.log"
 QMP_SOCK="$ROOT/qmp.sock"
 CON_SOCK="$ROOT/con.sock"
 QM_SOCK="$ROOT/qm.sock"
@@ -132,7 +131,6 @@ r | run)
 
   QARGV=(
     ./libexec/run.sh
-    --log "$LOG"
     --qmp "$QMP_SOCK"
     --console "$CON_SOCK"
     --monitor "$QM_SOCK"

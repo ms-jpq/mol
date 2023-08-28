@@ -4,7 +4,7 @@ set -o pipefail
 
 BREW="${BREW:-"$(brew --prefix)"}"
 
-LONG_OPTS='sudo,cpu:,mem:,log:,qmp:,console:,monitor:,vnc:,drive:,smbios:,ssh:'
+LONG_OPTS='sudo,cpu:,mem:,qmp:,console:,monitor:,vnc:,drive:,smbios:,ssh:'
 GO="$("$BREW/opt/gnu-getopt/bin/getopt" --options='' --longoptions="$LONG_OPTS" --name="$0" -- "$@")"
 eval -- set -- "$GO"
 
@@ -23,10 +23,6 @@ while (($#)); do
     ;;
   --mem)
     MEM="$2"
-    shift -- 2
-    ;;
-  --log)
-    LOG=("$2")
     shift -- 2
     ;;
   --qmp)
@@ -95,10 +91,6 @@ if [[ -v CONSOLE ]]; then
   ARGV+=(-serial "unix:server=on,wait=off,path=$CONSOLE")
 else
   ARGV+=(-serial stdio)
-fi
-
-if [[ -v LOG ]]; then
-  ARGV+=(-D "$LOG")
 fi
 
 if [[ -v QMP ]]; then
