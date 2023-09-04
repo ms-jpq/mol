@@ -19,7 +19,7 @@ LONG_OPTS='name:,os:,fork:,vnc'
 GO="$("$BREW/opt/gnu-getopt/bin/getopt" --options="$OPTS" --longoptions="$LONG_OPTS" --name="$0" -- "$@")"
 eval -- set -- "$GO"
 
-NAME='vm'
+NAME='_'
 VNC=0
 while (($#)); do
   case "$1" in

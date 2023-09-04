@@ -1,6 +1,6 @@
 # MoL
 
-Minimal hardware accelerated `curl -- linux.iso | qemu-system-aarch64` scripts.
+Minimal hardware accelerated `curl -- ubuntu.iso | qemu-system-aarch64` scripts.
 
 - SSH connection
 
