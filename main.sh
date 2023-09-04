@@ -126,14 +126,14 @@ n | new)
   exec -- true
   ;;
 r | run)
-  SMBIOS="$("$DIR/libexec/authorized_keys.sh")"
+  # SMBIOS="$("$DIR/libexec/authorized_keys.sh")"
   SSH_CONN="${SSH:-"127.0.0.1:$("$DIR/libexec/ssh-port.sh")"}"
 
   QARGV=(
     "$DIR/libexec/run.sh"
     --qmp "$QMP_SOCK"
     --monitor "$QM_SOCK"
-    --smbios "$SMBIOS"
+    # --smbios "$SMBIOS"
     --ssh "$SSH_CONN"
     --kernel "${KERNEL[@]}"
     --initrd "${INITRD[@]}"

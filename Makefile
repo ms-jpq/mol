@@ -16,11 +16,11 @@ SHELL := bash
 
 clean:
 	shopt -u failglob
-	rm -rf -- '$(LIB)/*/cloud-init*'
+	rm -v -rf -- $(LIB)/*/cloud-init*
 
 clobber: clean
 	shopt -u failglob
-	rm -rf -- '$(VAR)'
+	rm -v -rf -- '$(VAR)'
 
 VAR := ./var
 CACHE := $(VAR)/cache
