@@ -21,24 +21,19 @@ brew install -- qemu bash gnu-getopt make flock socat
 ./main.sh ACTION [-n --name NAME='vm'] [-f --fork UPSTREAM] [--os OS] [--vnc] -- ...convenience args -- ...raw qemu args
 ```
 
-| Action           | Description                                        |
-| ---------------- | -------------------------------------------------- |
-| `n` \| `new`     | create VM, optionally from `--fork UPSTREAM`       |
-| `r` \| `run`     | run VM                                             |
-| `l` \| `ls`      | list VMs                                           |
-| `rm` \| `remove` | remove VM                                          |
-| `pin`            | protect VM from `rm`                               |
-| `unpin`          | safety-off                                         |
-| `c` \| `console` | connect to VM serial console                       |
-| `s` \| `ssh`     | connect to VM via SSH                              |
-| `m` \| `monitor` | connect to qemu text console                       |
-| `v` \| `vnc`     | connect to VNC display (if VM was provisioned one) |
-| `q` \| `qmp`     | connect to qemu JSON console                       |
-
-| OS     | Description   |
-| ------ | ------------- |
-| ubuntu | ubuntu-lts    |
-| fedora | fedora-latest |
+| Action           | Description                                                      |
+| ---------------- | ---------------------------------------------------------------- |
+| `n` \| `new`     | create VM, optionally from `--fork UPSTREAM`                     |
+| `r` \| `run`     | run VM                                                           |
+| `l` \| `ls`      | list VMs                                                         |
+| `rm` \| `remove` | remove VM                                                        |
+| `pin`            | protect VM from `rm`                                             |
+| `unpin`          | safety-off                                                       |
+| `c` \| `console` | connect to VM serial console (only if VM is started without one) |
+| `s` \| `ssh`     | connect to VM via SSH                                            |
+| `m` \| `monitor` | connect to qemu text console                                     |
+| `v` \| `vnc`     | connect to VNC display (if VM was provisioned one)               |
+| `q` \| `qmp`     | connect to qemu JSON console                                     |
 
 ### Convenience Arguments
 

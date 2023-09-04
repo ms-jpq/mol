@@ -1,3 +1,3 @@
 .PHONY: test
 
-test: root.ubuntu root.fedora virtio-win
+test: root kernel virtio-win

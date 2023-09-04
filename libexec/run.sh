@@ -4,7 +4,7 @@ set -o pipefail
 
 BREW="${BREW:-"$(brew --prefix)"}"
 
-LONG_OPTS='sudo,cpu:,mem:,qmp:,console:,monitor:,vnc:,drive:,smbios:,ssh:'
+LONG_OPTS='sudo,cpu:,mem:,qmp:,console:,monitor:,vnc:,kernel:,initrd:,drive:,root:,smbios:,ssh:'
 GO="$("$BREW/opt/gnu-getopt/bin/getopt" --options='' --longoptions="$LONG_OPTS" --name="$0" -- "$@")"
 eval -- set -- "$GO"
 
@@ -41,8 +41,20 @@ while (($#)); do
     VNC="$2"
     shift -- 2
     ;;
+  --kernel)
+    KERNEL="$2"
+    shift -- 2
+    ;;
+  --initrd)
+    INITRD="$2"
+    shift -- 2
+    ;;
   --drive)
     DRIVES+=("$2")
+    shift -- 2
+    ;;
+  --root)
+    ROOT="$2"
     shift -- 2
     ;;
   --smbios)
@@ -82,26 +94,33 @@ ARGV=(
   -m "${MEM:-"size=1G"}"
 )
 
+CONSOLE=
 ARGV+=(
-  -device virtio-rng-pci-non-transitional
-  -device virtio-balloon-pci-non-transitional
+  -kernel "$KERNEL"
+  -initrd "$INITRD"
+  -append "root=$ROOT"
 )
 
-if [[ -v CONSOLE ]]; then
+ARGV+=(
+  -device virtio-rng-pci-non-transitional
+  -device 'virtio-balloon-pci-non-transitional,deflate-on-oom=on,free-page-reporting=on'
+)
+
+if [[ -n "${CONSOLE:-""}" ]]; then
   ARGV+=(-serial "unix:server=on,wait=off,path=$CONSOLE")
 else
   ARGV+=(-serial stdio)
 fi
 
-if [[ -v QMP ]]; then
+if [[ -n "${QMP:-""}" ]]; then
   ARGV+=(-qmp "unix:$QMP,server,nowait")
 fi
 
-if [[ -v MONITOR ]]; then
+if [[ -n "${MONITOR:-""}" ]]; then
   ARGV+=(-monitor "unix:$MONITOR,server,nowait")
 fi
 
-if [[ -v VNC ]]; then
+if [[ -n "${VNC:-""}" ]]; then
   ARGV+=(
     -vnc "$VNC,password=on"
     -device "ich9-intel-hda"
@@ -124,8 +143,6 @@ ARGV+=(-nic "user,${NIC}$SSH_FWD")
 if ! ((UID)); then
   ARGV+=(-nic "vmnet-shared,$NIC")
 fi
-
-ARGV+=(-bios "$BREW/opt/qemu/share/qemu/edk2-aarch64-code.fd")
 
 for IDX in "${!DRIVES[@]}"; do
   DRIVE="${DRIVES[$IDX]}"

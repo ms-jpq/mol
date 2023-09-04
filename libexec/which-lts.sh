@@ -2,15 +2,6 @@
 
 set -o pipefail
 
-case "$MACHTYPE" in
-aarch64*)
-  ARCH=arm64
-  ;;
-*)
-  ARCH=amd64
-  ;;
-esac
-
 CONSERVE=3
 
 if ! [[ -v RELEASE ]]; then
@@ -26,4 +17,4 @@ if ! [[ -v RELEASE ]]; then
   RELEASE="$((YEAR / 2 * 2)).04"
 fi
 
-printf -- '%s' "https://cloud-images.ubuntu.com/releases/$RELEASE/release/ubuntu-$RELEASE-server-cloudimg-$ARCH.img"
+printf -- '%s' "$RELEASE"

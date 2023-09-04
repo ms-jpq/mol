@@ -9,7 +9,7 @@ else
   REAL="$0"
 fi
 
-cd -- "${REAL%/*}"
+DIR="${REAL%/*}"
 
 BREW="$(brew --prefix)"
 export -- BREW
@@ -20,16 +20,11 @@ GO="$("$BREW/opt/gnu-getopt/bin/getopt" --options="$OPTS" --longoptions="$LONG_O
 eval -- set -- "$GO"
 
 NAME='vm'
-OS='ubuntu'
 VNC=0
 while (($#)); do
   case "$1" in
   -n | --name)
     NAME="$2"
-    shift -- 2
-    ;;
-  --os)
-    OS="$2"
     shift -- 2
     ;;
   -f | --fork)
@@ -51,13 +46,18 @@ while (($#)); do
   esac
 done
 
-LIB="./var/lib"
-ROOT="$LIB/$NAME.$OS"
+LIB="$DIR/var/lib"
+CACHE="$DIR/var/cache"
+ROOT="$LIB/$NAME"
 
 QMP_SOCK="$ROOT/qmp.sock"
 CON_SOCK="$ROOT/con.sock"
 QM_SOCK="$ROOT/qm.sock"
 VNC_SOCK="$ROOT/vnc.sock"
+
+KERNEL=("$CACHE"/*-vmlinuz-*)
+INITRD=("$CACHE"/*-initrd-*)
+FS_ROOT='/dev/vda1'
 
 RAW=run.raw
 DRIVE="$ROOT/$RAW"
@@ -88,7 +88,7 @@ new() {
   {
     fwait "$ROOT"
     if [[ -v FORK ]]; then
-      F_DRIVE="$LIB/$FORK.$OS/$RAW"
+      F_DRIVE="$LIB/$FORK/$RAW"
 
       printf -- '%q%s%q\n' "$F_DRIVE" ' -> ' "$DRIVE" >&2
       if ! [[ -f "$F_DRIVE" ]]; then
@@ -104,7 +104,7 @@ new() {
       mkdir -v -p -- "$ROOT" >&2
       flock --nonblock "$ROOT" cp -v -f -- "$F_DRIVE" "$DRIVE"
     else
-      flock --nonblock "$ROOT" gmake -- NAME="$NAME" "run.$OS"
+      flock --nonblock "$ROOT" gmake --directory "$DIR" -- NAME="$NAME" run
     fi
   } >&2
 }
@@ -126,19 +126,24 @@ n | new)
   exec -- true
   ;;
 r | run)
-  SMBIOS="$(./libexec/authorized_keys.sh)"
-  SSH_CONN="${SSH:-"127.0.0.1:$(./libexec/ssh-port.sh)"}"
+  SMBIOS="$("$DIR/libexec/authorized_keys.sh")"
+  SSH_CONN="${SSH:-"127.0.0.1:$("$DIR/libexec/ssh-port.sh")"}"
 
   QARGV=(
-    ./libexec/run.sh
+    "$DIR/libexec/run.sh"
     --qmp "$QMP_SOCK"
-    --console "$CON_SOCK"
     --monitor "$QM_SOCK"
     --smbios "$SMBIOS"
     --ssh "$SSH_CONN"
+    --kernel "${KERNEL[@]}"
+    --initrd "${INITRD[@]}"
     --drive "$DRIVE"
+    --root "$FS_ROOT"
     --drive "$CLOUD_INIT"
   )
+  if ! [[ -t 0 ]]; then
+    QARGV+=(--console "$CON_SOCK")
+  fi
   if ((VNC)); then
     QARGV+=(--vnc "unix:$VNC_SOCK")
   fi
