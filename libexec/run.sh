@@ -96,6 +96,8 @@ ARGV=(
 
 KERNEL_COMMANDS=(
   panic=-1
+  random.trust_cpu=on
+  random.trust_bootloader=on
   "root=$ROOT"
 )
 
