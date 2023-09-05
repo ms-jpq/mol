@@ -94,11 +94,15 @@ ARGV=(
   -m "${MEM:-"size=1G"}"
 )
 
-CONSOLE=
+KERNEL_COMMANDS=(
+  panic=-1
+  "root=$ROOT"
+)
+
 ARGV+=(
   -kernel "$KERNEL"
   -initrd "$INITRD"
-  -append "root=$ROOT"
+  -append "${KERNEL_COMMANDS[*]}"
 )
 
 ARGV+=(
