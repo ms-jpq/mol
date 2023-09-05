@@ -88,13 +88,14 @@ ARGV=(
   qemu-system-aarch64
   -nodefaults
   -no-user-config
-  -machine 'type=virt,accel=hvf'
+  -machine 'type=virt,acpi=off,accel=hvf'
   -cpu max
   -smp "$CPU"
   -m "${MEM:-"size=1G"}"
 )
 
 KERNEL_COMMANDS=(
+  reboot=triple
   panic=-1
   random.trust_cpu=on
   random.trust_bootloader=on
