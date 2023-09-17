@@ -86,7 +86,7 @@ fi
 
 ARGV=(
   qemu-system-aarch64
-  -compat 'deprecated-input=reject'
+  -compat 'deprecated-input=crash'
   -nodefaults
   -no-user-config
   -machine 'type=virt,acpi=off,accel=hvf'
