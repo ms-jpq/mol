@@ -156,7 +156,7 @@ for IDX in "${!DRIVES[@]}"; do
   DRIVE="${DRIVES[$IDX]}"
   ID="dri$IDX"
   ARGV+=(
-    -drive "if=none,discard=unmap,format=raw,id=$ID,file=$DRIVE"
+    -drive "if=none,format=raw,id=$ID,file=$DRIVE"
     -device "virtio-blk-pci-non-transitional,drive=$ID"
   )
 done
