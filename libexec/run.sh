@@ -4,7 +4,7 @@ set -o pipefail
 
 BREW="${BREW:-"$(brew --prefix)"}"
 
-LONG_OPTS='sudo,cpu:,mem:,qmp:,console:,monitor:,vnc:,kernel:,initrd:,drive:,root:,smbios:,ssh:'
+LONG_OPTS='sudo,cpu:,mem:,qmp:,console:,monitor:,vnc:,passwd:,kernel:,initrd:,drive:,root:,smbios:,ssh:'
 GO="$("$BREW/opt/gnu-getopt/bin/getopt" --options='' --longoptions="$LONG_OPTS" --name="$0" -- "$@")"
 eval -- set -- "$GO"
 
@@ -39,6 +39,10 @@ while (($#)); do
     ;;
   --vnc)
     VNC="$2"
+    shift -- 2
+    ;;
+  --passwd)
+    PASSWD="$2"
     shift -- 2
     ;;
   --kernel)
@@ -129,8 +133,10 @@ if [[ -n "${MONITOR:-""}" ]]; then
 fi
 
 if [[ -n "${VNC:-""}" ]]; then
+  ID='s0'
   ARGV+=(
-    -vnc "$VNC,password=on"
+    -object "secret,id=$ID,format=raw,data=$PASSWD"
+    -vnc "$VNC,password-secret=$ID"
     -device "ich9-intel-hda"
     -device 'virtio-gpu-pci'
     -device 'virtio-keyboard-pci'

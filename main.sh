@@ -66,6 +66,8 @@ CLOUD_INIT="$ROOT/cloud-init.iso"
 SSH_LOCATION="$ROOT/ssh.conn"
 SSH_CMD=(ssh -l root -p)
 
+PASSWD='root'
+
 fwait() {
   {
     mkdir -v -p -- "$1"
@@ -145,7 +147,10 @@ r | run)
     QARGV+=(--console "$CON_SOCK")
   fi
   if ((VNC)); then
-    QARGV+=(--vnc "unix:$VNC_SOCK")
+    QARGV+=(
+      --vnc "unix:$VNC_SOCK"
+      --passwd "$PASSWD"
+    )
   fi
   QARGV+=("$@")
 
@@ -178,12 +183,8 @@ unpin)
   exec -- chmod -v -t "$ROOT" >&2
   ;;
 v | vnc)
-  SOCK="$VNC_SOCK"
-  {
-    nc -U -- "$QM_SOCK" <<<'set_password vnc root'
-    open -u 'vnc://localhost'
-  } >&2
-  exec -- socat 'TCP-LISTEN:5900,reuseaddr,fork' "UNIX-CONNECT:$SOCK"
+  open -u "vnc://:$PASSWD@localhost" >&2
+  exec -- socat 'TCP-LISTEN:5900,reuseaddr,fork' "UNIX-CONNECT:$VNC_SOCK"
   ;;
 c | console)
   SOCK="$CON_SOCK"
