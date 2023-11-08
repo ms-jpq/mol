@@ -55,8 +55,6 @@ CON_SOCK="$ROOT/con.sock"
 QM_SOCK="$ROOT/qm.sock"
 VNC_SOCK="$ROOT/vnc.sock"
 
-KERNEL=("$CACHE"/*-vmlinuz-*)
-INITRD=("$CACHE"/*-initrd-*)
 FS_ROOT='/dev/vda1'
 
 RAW=run.raw
@@ -128,8 +126,15 @@ n | new)
   exec -- true
   ;;
 r | run)
+  if ! [[ -f "$DRIVE" ]] || [[ -v FORK ]]; then
+    new
+  fi
+
   # SMBIOS="$("$DIR/libexec/authorized_keys.sh")"
   SSH_CONN="${SSH:-"127.0.0.1:$("$DIR/libexec/ssh-port.sh")"}"
+
+  KERNEL=("$CACHE"/*-vmlinuz-*)
+  INITRD=("$CACHE"/*-initrd-*)
 
   QARGV=(
     "$DIR/libexec/run.sh"
@@ -141,7 +146,7 @@ r | run)
     --initrd "${INITRD[@]}"
     --drive "$DRIVE"
     --root "$FS_ROOT"
-    --drive "$CLOUD_INIT"
+    --drive "$CLOUD_INIT,readonly=on"
   )
   if ! [[ -t 0 ]]; then
     QARGV+=(--console "$CON_SOCK")
@@ -153,10 +158,6 @@ r | run)
     )
   fi
   QARGV+=("$@")
-
-  if ! [[ -f "$DRIVE" ]] || [[ -v FORK ]]; then
-    new
-  fi
 
   fwait "$ROOT"
   ssh_pp "$SSH_CONN"
