@@ -12,7 +12,7 @@ export -- HOSTNAME PASSWD AUTHORIZED_KEYS
 
 SALT="$(uuidgen)"
 PASSWD="$(openssl passwd -1 -salt "$SALT" root)"
-AUTHORIZED_KEYS="$(cat -- ~/.ssh/*.pub)"
+AUTHORIZED_KEYS="$(cat -- ~/.ssh/*.pub | jq --raw-input --slurp --compact-output 'split("\n") | map(select(. != ""))')"
 ./libexec/envsubst.pl ./cloud-init/user-data.yml >"$DST/user-data"
 
 cp -a -R -f -- ./cloud-init/scripts "$DST/scripts"
