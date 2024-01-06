@@ -11,7 +11,7 @@ export -- HOSTNAME PASSWD AUTHORIZED_KEYS
 ./libexec/envsubst.pl <./cloud-init/meta-data.yml >"$DST/meta-data"
 
 SALT="$(uuidgen)"
-PASSWD="$(openssl passwd -1 -salt "$SALT" root)"
+PASSWD="$(openssl passwd -1 -salt "$SALT" root | jq --raw-input)"
 AUTHORIZED_KEYS="$(cat -- ~/.ssh/*.pub | jq --raw-input --slurp --compact-output 'split("\n") | map(select(. != ""))')"
 ./libexec/envsubst.pl ./cloud-init/user-data.yml >"$DST/user-data"
 
